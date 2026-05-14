@@ -5,17 +5,19 @@ services:
     image: postgres:16-alpine
     container_name: fatura_postgres
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: fatura_user
-      POSTGRES_PASSWORD: fatura_pass
-      POSTGRES_DB: fatura_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U fatura_user -d fatura_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,17 +28,10 @@ services:
       dockerfile: Dockerfile
     container_name: fatura_backend
     restart: unless-stopped
-    environment:
-      NODE_ENV: development
-      PORT: 3001
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: fatura_user
-      DB_PASSWORD: fatura_pass
-      DB_NAME: fatura_db
-      JWT_SECRET: supersecretjwtkey2024
+    env_file:
+      - .env
     ports:
-      - "3001:3001"
+      - "${PORT}:${PORT}"
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -52,7 +47,7 @@ services:
     container_name: fatura_frontend
     restart: unless-stopped
     environment:
-      VITE_API_URL: http://localhost:3001/api
+      VITE_API_URL: http://localhost:${PORT}/api
     ports:
       - "5173:5173"
     volumes:
