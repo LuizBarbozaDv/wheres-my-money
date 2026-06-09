@@ -124,7 +124,7 @@ export default function UploadFatura({ onSuccess }) {
       </button>
 
       <p className="text-slate-600 text-xs text-center">
-        Formatos aceitos: CSV exportado do banco, OFX ou TXT estruturado
+        Formatos aceitos: CSV, PDF ou TXT
       </p>
     </div>
   )
