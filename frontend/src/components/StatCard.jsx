@@ -14,7 +14,7 @@ export default function StatCard({ icon, label, value, sub, color = 'blue' }) {
       </div>
       <div className="min-w-0">
         <p className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">{label}</p>
-        <p className="text-white font-display font-bold text-xl leading-tight truncate">{value}</p>
+        <p className="text-white font-sans font-medium text-2xl tracking-tight truncate">{value}</p>        
         {sub && <p className="text-slate-500 text-xs mt-0.5">{sub}</p>}
       </div>
     </div>

@@ -64,7 +64,7 @@ export default function UploadFatura({ onSuccess }) {
       >
         <input {...getInputProps()} />
         <div className="text-4xl mb-3">
-          {file ? (isPdf ? '📕' : '✅') : isDragActive ? '📂' : '📄'}
+          {file ? (isPdf ? '📄' : '✅') : isDragActive ? '📂' : '📄'}
         </div>
         {file ? (
           <div>
