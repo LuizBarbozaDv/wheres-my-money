@@ -25,18 +25,18 @@ CREATE TABLE categorias (
 
 -- Seed de categorias padrão
 INSERT INTO categorias (nome, icone, cor) VALUES
-  ('Alimentação', '🍔', '#f97316'),
-  ('Transporte', '🚗', '#3b82f6'),
-  ('Saúde', '💊', '#22c55e'),
-  ('Lazer', '🎮', '#a855f7'),
-  ('Educação', '📚', '#06b6d4'),
-  ('Vestuário', '👕', '#ec4899'),
-  ('Moradia', '🏠', '#f59e0b'),
-  ('Viagem', '✈️', '#14b8a6'),
-  ('Assinaturas', '📺', '#8b5cf6'),
-  ('Supermercado', '🛒', '#84cc16'),
-  ('Restaurante', '🍽️', '#fb923c'),
-  ('Outros', '💳', '#94a3b8');
+  ('Alimentação', '🍔', '#FF5722'),   
+  ('Transporte', '🚗', '#2196F3'),    
+  ('Saúde', '💊', '#00C853'),        
+  ('Lazer', '🎮', '#9C27B0'),         
+  ('Educação', '📚', '#00BCD4'),     
+  ('Vestuário', '👕', '#E91E63'),      
+  ('Moradia', '🏠', '#FF9800'),      
+  ('Viagem', '✈️', '#009688'),       
+  ('Assinaturas', '📺', '#673AB7'),    
+  ('Supermercado', '🛒', '#8BC34A'),
+  ('Restaurante', '🍽️', '#FF3D00'),  
+  ('Outros', '💳', '#5C6BC0');
 
 -- Transações
 CREATE TABLE transacoes (

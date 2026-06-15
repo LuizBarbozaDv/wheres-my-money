@@ -398,8 +398,8 @@ function inferirEstabelecimento(descricao) {
 //  CATEGORIZAÇÃO
 // ─────────────────────────────────────────────────────────────────────────────
 const REGRAS_CATEGORIA = [
-  { regex: /uber|99|taxi|posto|combust/i, cat: 'Transporte' },
-  { regex: /ifood|restaur|lanchonete|padaria|cafe|starbucks/i, cat: 'Restaurante' },
+  { regex: /\b(?:uber|99|taxi|posto|combust)\b/i, cat: 'Transporte' },
+  { regex: /ifood|ifd|restaur|lanchonete|pizza|sushi|hamb|padaria|cafe|starbucks/i, cat: 'Restaurante' },
   { regex: /carrefour|extra|mercado|supermercado|hortifruti/i, cat: 'Supermercado' },
   { regex: /farmacia|drogaria|medic|hospital|clinica/i, cat: 'Saúde' },
   { regex: /netflix|spotify|amazon prime|assinatura/i, cat: 'Assinaturas' },

@@ -35,7 +35,7 @@ const theme = {
   tooltipBorder: 'rgba(99, 102, 241, 0.3)',
 }
 
-// Paleta de 12 cores (sólidas) – será usada tanto no gráfico quanto na lista
+// Paleta fallback (12 cores) – usada se o backend não devolver categoria_cor
 const CHART_COLORS = [
   '#6366F1', '#8B5CF6', '#EC4899', '#F43F5E', '#F97316', '#F59E0B',
   '#10B981', '#14B8A6', '#06B6D4', '#3B82F6', '#6B7280', '#9CA3AF',
@@ -126,19 +126,30 @@ export default function FaturaDetail() {
       color: c.cor || CHART_COLORS[i % CHART_COLORS.length]
     }))
 
-  // Top 10 estabelecimentos com agregação de nomes iguais
+  // Top 10 estabelecimentos com agregação e cor da categoria
   const rawBarData = porEstab.map(e => ({
     name: (e.estabelecimento || 'Desconhecido').substring(0, 22),
-    valor: parseFloat(e.total_gasto)
+    valor: parseFloat(e.total_gasto),
+    categoria_cor: e.categoria_cor // fornecido pelo backend
   }))
 
   const grouped = rawBarData.reduce((acc, curr) => {
-    if (!acc[curr.name]) acc[curr.name] = 0
-    acc[curr.name] += curr.valor
+    if (!acc[curr.name]) {
+      acc[curr.name] = { valor: 0, categoria_cor: curr.categoria_cor }
+    }
+    acc[curr.name].valor += curr.valor
+    // Mantém a cor do primeiro item; se quiser a predominante, precisaria de lógica adicional
+    if (!acc[curr.name].categoria_cor && curr.categoria_cor) {
+      acc[curr.name].categoria_cor = curr.categoria_cor
+    }
     return acc
   }, {})
 
-  let barData = Object.entries(grouped).map(([name, valor]) => ({ name, valor }))
+  let barData = Object.entries(grouped).map(([name, data]) => ({
+    name,
+    valor: data.valor,
+    cor: data.categoria_cor || CHART_COLORS[Object.keys(grouped).indexOf(name) % CHART_COLORS.length]
+  }))
   barData.sort((a, b) => b.valor - a.valor)
   barData = barData.slice(0, 10)
 
@@ -238,15 +249,15 @@ export default function FaturaDetail() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 animate-stagger">
-        <StatCard icon="💸" label="Total Gasto" value={formatCurrency(totais.total_gasto)} color="red" />
-        <StatCard icon="🔢" label="Transações" value={totais.total_transacoes} color="blue" />
-        <StatCard icon="🎯" label="Ticket Médio" value={formatCurrency(totais.ticket_medio)} color="purple" />
-        <StatCard icon="⬆️" label="Maior Gasto" value={formatCurrency(totais.maior_gasto)} color="amber" />
+        <StatCard icon="💸" label="Total Gasto" value={formatCurrency(totais.total_gasto)} color="0B1120" />
+        <StatCard icon="🔢" label="Transações" value={totais.total_transacoes} color="0B1120" />
+        <StatCard icon="🎯" label="Ticket Médio" value={formatCurrency(totais.ticket_medio)} color="0B1120" />
+        <StatCard icon="⬆️" label="Maior Gasto" value={formatCurrency(totais.maior_gasto)} color="0B1120" />
       </div>
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: theme.cardBg, border: `1px solid ${theme.border}` }}>
-        {[['resumo', '📊 Resumo'], ['transacoes', '📋 Transações']].map(([key, label]) => (
+        {[['resumo', 'Resumo'], ['transacoes', 'Transações']].map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -265,7 +276,7 @@ export default function FaturaDetail() {
       {tab === 'resumo' && (
         <div className="space-y-5 animate-fade-up">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* Donut (categorias) com cores consistentes */}
+            {/* Donut (categorias) */}
             <div className="card p-5" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
               <h3 className="font-display font-semibold mb-5" style={{ color: theme.text }}>Gastos por Categoria</h3>
               {pieData.length > 0 ? (
@@ -287,7 +298,7 @@ export default function FaturaDetail() {
                           {pieData.map((entry, i) => (
                             <Cell
                               key={i}
-                              fill={entry.color}  // COR SÓLIDA CONSISTENTE
+                              fill={entry.color}
                               stroke="none"
                               opacity={activeSlice === null || activeSlice === i ? 1 : 0.3}
                               style={{ cursor: 'pointer', transition: 'opacity .2s' }}
@@ -299,7 +310,6 @@ export default function FaturaDetail() {
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-
                   <div className="flex-1 space-y-1 w-full">
                     {pieData.slice(0, 7).map((d, i) => (
                       <div
@@ -371,20 +381,12 @@ export default function FaturaDetail() {
             </div>
           </div>
 
-          {/* Top 10 Estabelecimentos (agrupados) */}
+          {/* Top 10 Estabelecimentos – COR DA CATEGORIA */}
           <div className="card p-5" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
             <h3 className="font-display font-semibold mb-5" style={{ color: theme.text }}>Top 10 Estabelecimentos</h3>
             {barData.length > 0 ? (
               <ResponsiveContainer width="100%" height={Math.max(barData.length * 36, 200)}>
                 <BarChart data={barData} layout="vertical" margin={{ left: 8, right: 44, top: 2, bottom: 2 }}>
-                  <defs>
-                    {CHART_COLORS.map((c, i) => (
-                      <linearGradient key={i} id={`bg${i}`} x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor={c} stopOpacity={0.95} />
-                        <stop offset="100%" stopColor={CHART_COLORS[(i + 3) % CHART_COLORS.length]} stopOpacity={0.75} />
-                      </linearGradient>
-                    ))}
-                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.border} horizontal={false} />
                   <XAxis
                     type="number"
@@ -403,8 +405,8 @@ export default function FaturaDetail() {
                   />
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
                   <Bar dataKey="valor" radius={[0, 8, 8, 0]} maxBarSize={26}>
-                    {barData.map((_, i) => (
-                      <Cell key={i} fill={`url(#bg${i % CHART_COLORS.length})`} />
+                    {barData.map((entry, i) => (
+                      <Cell key={i} fill={entry.cor} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -412,7 +414,7 @@ export default function FaturaDetail() {
             ) : <EmptyChart />}
           </div>
 
-          {/* Detalhamento por categoria (listagem com barras de progresso) */}
+          {/* Detalhamento por categoria */}
           <div className="card overflow-hidden" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
             <div className="px-5 py-4" style={{ borderBottom: `1px solid ${theme.border}` }}>
               <h3 className="font-display font-semibold" style={{ color: theme.text }}>Detalhamento por Categoria</h3>

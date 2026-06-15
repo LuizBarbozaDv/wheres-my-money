@@ -83,34 +83,39 @@ export default function Home() {
             <div
               key={f.id}
               onClick={() => navigate(`/fatura/${f.id}`)}
-              className="card p-5 cursor-pointer hover:border-white/10 hover:bg-white/[0.03] transition-all duration-200 group"
+              className="card p-5 cursor-pointer hover:border-white/10 hover:bg-white/[0.03] transition-all duration-200 group overflow-hidden"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-brand-500/15 text-brand-400 flex items-center justify-center text-lg">
-                  💳
+              {/* Topo: nome e badge do cartão (se existir) */}
+              <div className="flex flex-col min-w-0 mb-3">
+                <h3 className="font-display font-semibold text-white text-lg truncate w-full">
+                  {f.nome}
+                </h3>
+                {f.cartao && (
+                  <span className="badge bg-white/5 text-slate-400 text-xs mt-1 truncate w-fit">
+                    {f.cartao}
+                  </span>
+                )}
+              </div>
+
+              {/* Linha única com mês, valor total, transações e lixeira */}
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5 flex-wrap">
+                <div className="flex items-center gap-3 flex-wrap min-w-0">
+                  <span className="text-slate-400 text-sm whitespace-nowrap">{formatMonth(f.mes_referencia)}</span>
+                  <span className="text-white font-mono font-semibold text-base whitespace-nowrap">
+                    {formatCurrency(f.total_gasto)}
+                  </span>
+                  <span className="text-slate-300 text-sm whitespace-nowrap">
+                    {f.total_transacoes} transações
+                  </span>
                 </div>
+
                 <button
                   onClick={(e) => handleDelete(e, f.id)}
-                  className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all text-sm px-2 py-1 rounded-lg hover:bg-red-500/10"
+                  className="text-slate-500 hover:text-red-400 transition-colors text-base px-2 py-1 rounded-lg hover:bg-red-500/10 flex-shrink-0"
+                  title="Excluir fatura"
                 >
                   🗑
                 </button>
-              </div>
-
-              <h3 className="font-display font-semibold text-white mb-1 truncate">{f.nome}</h3>
-              {f.cartao && (
-                <span className="badge bg-white/5 text-slate-400 mb-3">{f.cartao}</span>
-              )}
-
-              <div className="mt-auto pt-3 border-t border-white/5 flex items-center justify-between">
-                <div>
-                  <p className="text-slate-500 text-xs">{formatMonth(f.mes_referencia)}</p>
-                  <p className="text-white font-mono font-semibold">{formatCurrency(f.total_gasto)}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-slate-500 text-xs">Transações</p>
-                  <p className="text-slate-300 font-semibold">{f.total_transacoes}</p>
-                </div>
               </div>
             </div>
           ))}

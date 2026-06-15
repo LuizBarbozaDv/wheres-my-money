@@ -63,9 +63,6 @@ export default function UploadFatura({ onSuccess }) {
         )}
       >
         <input {...getInputProps()} />
-        <div className="text-4xl mb-3">
-          {file ? (isPdf ? '📄' : '✅') : isDragActive ? '📂' : '📄'}
-        </div>
         {file ? (
           <div>
             <p className="font-medium text-emerald-400">{file.name}</p>
@@ -126,14 +123,14 @@ export default function UploadFatura({ onSuccess }) {
           </>
         ) : (
           <>
-            <span>⬆️</span>
+            <span></span>
             Importar Fatura
           </>
         )}
       </button>
 
       <p className="text-slate-600 text-xs text-center">
-        Formatos aceitos: CSV exportado do banco, OFX, TXT ou PDF (com texto selecionável)
+        Formatos aceitos: CSV exportado do banco, OFX, TXT ou PDF
       </p>
     </div>
   )
