@@ -20,7 +20,10 @@ export default function UploadFatura({ onSuccess }) {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { 'text/*': ['.csv', '.txt', '.ofx'] },
+    accept: {
+      'text/*': ['.csv', '.txt', '.ofx'],
+      'application/pdf': ['.pdf'],
+    },
     maxFiles: 1,
   })
 
@@ -42,6 +45,9 @@ export default function UploadFatura({ onSuccess }) {
     }
   }
 
+  const ext = file?.name.split('.').pop().toLowerCase()
+  const isPdf = ext === 'pdf'
+
   return (
     <div className="space-y-4">
       {/* Drop zone */}
@@ -57,7 +63,9 @@ export default function UploadFatura({ onSuccess }) {
         )}
       >
         <input {...getInputProps()} />
-        <div className="text-4xl mb-3">{file ? '✅' : isDragActive ? '📂' : '📄'}</div>
+        <div className="text-4xl mb-3">
+          {file ? (isPdf ? '📕' : '✅') : isDragActive ? '📂' : '📄'}
+        </div>
         {file ? (
           <div>
             <p className="font-medium text-emerald-400">{file.name}</p>
@@ -68,7 +76,7 @@ export default function UploadFatura({ onSuccess }) {
             <p className="text-slate-300 font-medium">
               {isDragActive ? 'Solte o arquivo aqui' : 'Arraste o arquivo ou clique para selecionar'}
             </p>
-            <p className="text-slate-500 text-sm mt-1">Suporta CSV, TXT e OFX</p>
+            <p className="text-slate-500 text-sm mt-1">Suporta CSV, TXT, OFX e PDF</p>
           </div>
         )}
       </div>
@@ -98,7 +106,7 @@ export default function UploadFatura({ onSuccess }) {
       )}
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm animate-fade-in">
           {error}
         </div>
       )}
@@ -114,17 +122,18 @@ export default function UploadFatura({ onSuccess }) {
         {loading ? (
           <>
             <span className="animate-spin text-lg">⟳</span>
-            Processando...
+            {isPdf ? 'Extraindo dados do PDF...' : 'Processando...'}
           </>
         ) : (
           <>
-            <span>Importar Fatura</span>
+            <span>⬆️</span>
+            Importar Fatura
           </>
         )}
       </button>
 
       <p className="text-slate-600 text-xs text-center">
-        Formatos aceitos: CSV, PDF ou TXT
+        Formatos aceitos: CSV exportado do banco, OFX, TXT ou PDF (com texto selecionável)
       </p>
     </div>
   )

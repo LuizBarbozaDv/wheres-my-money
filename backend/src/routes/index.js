@@ -8,13 +8,12 @@ const categoriasCtrl = require('../controllers/categoriasController');
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 35 * 1024 * 1024 }, // 15MB — PDFs costumam ser maiores que CSVs
   fileFilter: (req, file, cb) => {
-    const allowed = ['text/csv', 'text/plain', 'application/octet-stream', 'text/x-csv'];
-    const allowedExt = ['.csv', '.txt', '.ofx'];
+    const allowedExt = ['.csv', '.txt', '.ofx', '.pdf'];
     const ext = '.' + file.originalname.split('.').pop().toLowerCase();
     if (allowedExt.includes(ext)) return cb(null, true);
-    cb(new Error('Formato não suportado. Use CSV, TXT ou OFX'));
+    cb(new Error('Formato não suportado. Use CSV, TXT, OFX ou PDF'));
   },
 });
 

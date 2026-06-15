@@ -72,7 +72,7 @@ export default function Home() {
         <div className="card p-16 text-center">
           <div className="text-5xl mb-4">📂</div>
           <h3 className="font-display font-semibold text-xl text-white mb-2">Nenhuma fatura ainda</h3>
-          <p className="text-slate-400 mb-6">Importe seu primeiro arquivo CSV ou OFX para começar</p>
+          <p className="text-slate-400 mb-6">Importe seu primeiro arquivo CSV, PDF ou OFX para começar</p>
           <button onClick={() => setShowUpload(true)} className="btn-primary mx-auto">
             Importar Fatura
           </button>

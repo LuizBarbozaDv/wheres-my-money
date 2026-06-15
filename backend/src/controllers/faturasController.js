@@ -1,11 +1,10 @@
 const db = require('../models/db');
 const { parseFatura, categorizarAutomatico } = require('../utils/faturaParser');
-const { v4: uuidv4 } = require('uuid');
 
 // GET /api/faturas
 async function listarFaturas(req, res) {
   const result = await db.query(
-    `SELECT f.*, 
+    `SELECT f.*,
       COUNT(t.id)::int AS total_transacoes,
       COALESCE(SUM(CASE WHEN t.tipo = 'debito' THEN t.valor ELSE 0 END), 0) AS total_gasto
      FROM faturas f
@@ -38,26 +37,28 @@ async function buscarFatura(req, res) {
 async function uploadFatura(req, res) {
   if (!req.file) return res.status(400).json({ error: 'Arquivo não enviado' });
 
-  const conteudo = req.file.buffer.toString('utf-8');
   const nomeArquivo = req.file.originalname;
+  const ext = nomeArquivo.split('.').pop().toLowerCase();
 
-  // Parse do arquivo
+  // PDFs precisam do buffer binário; os demais formatos são lidos como texto UTF-8
+  const conteudo = ext === 'pdf'
+    ? req.file.buffer
+    : req.file.buffer.toString('utf-8');
+
   let transacoesRaw;
   try {
-    transacoesRaw = parseFatura(conteudo, nomeArquivo);
+    transacoesRaw = await parseFatura(conteudo, nomeArquivo);
   } catch (e) {
     return res.status(422).json({ error: `Erro ao processar arquivo: ${e.message}` });
   }
 
-  // Detecta mês de referência pela maioria das transações
+  // Detecta mês de referência pela mediana das datas
   const datas = transacoesRaw.map(t => t.data).sort();
   const mesRef = datas[Math.floor(datas.length / 2)]?.substring(0, 7) || new Date().toISOString().substring(0, 7);
 
-  // Busca categorias para auto-categorização
   const cats = await db.query('SELECT * FROM categorias');
   const categorias = cats.rows;
 
-  // Cria a fatura
   const nomeFatura = req.body.nome || `Fatura ${mesRef}`;
   const cartao = req.body.cartao || null;
   const vencimento = req.body.data_vencimento || null;
@@ -73,7 +74,6 @@ async function uploadFatura(req, res) {
   );
   const faturaId = fatura.rows[0].id;
 
-  // Insere transações em batch
   const values = [];
   const params = [];
   let idx = 1;
@@ -88,7 +88,7 @@ async function uploadFatura(req, res) {
   }
 
   await db.query(
-    `INSERT INTO transacoes 
+    `INSERT INTO transacoes
        (fatura_id, categoria_id, descricao, estabelecimento, valor, data, parcela_atual, parcelas_total, tipo)
      VALUES ${values.join(', ')}`,
     params
@@ -112,14 +112,8 @@ async function resumoFatura(req, res) {
   const { id } = req.params;
 
   const [porCategoria, porEstabelecimento, porDia, totais] = await Promise.all([
-    db.query(
-      `SELECT * FROM vw_resumo_categoria WHERE fatura_id = $1 ORDER BY total_gasto DESC`,
-      [id]
-    ),
-    db.query(
-      `SELECT * FROM vw_resumo_estabelecimento WHERE fatura_id = $1 LIMIT 20`,
-      [id]
-    ),
+    db.query(`SELECT * FROM vw_resumo_categoria WHERE fatura_id = $1 ORDER BY total_gasto DESC`, [id]),
+    db.query(`SELECT * FROM vw_resumo_estabelecimento WHERE fatura_id = $1 LIMIT 20`, [id]),
     db.query(
       `SELECT DATE_TRUNC('day', data)::date AS dia, SUM(valor) AS total
        FROM transacoes WHERE fatura_id = $1 AND tipo = 'debito'
